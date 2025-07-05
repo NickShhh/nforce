@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
 const { Client, GatewayIntentBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, TextInputBuilder, ModalBuilder } = require('discord.js');
+const axios = require('axios'); // ¡Añade esta línea!
 
 const app = express();
 const port = process.env.PORT;
@@ -51,6 +52,22 @@ async function startApplication() {
         console.error('Error FATAL al iniciar la aplicación (DB o servidor):', err);
         process.exit(1); // Sale del proceso si no puede conectar a la DB
     }
+}
+
+async function getRobloxUsername(userId) {
+    try {
+        const response = await axios.post(
+            'https://users.roblox.com/v1/users',
+            { userIds: [parseInt(userId)], excludeBannedUsers: false }
+        );
+
+        if (response.data && response.data.data && response.data.data.length > 0) {
+            return response.data.data[0].name; // Devuelve el username
+        }
+    } catch (error) {
+        console.error(`Error al obtener username de Roblox para ID ${userId}:`, error.message);
+    }
+    return `ID_${userId}`; // Devuelve un placeholder si falla
 }
 
 // Discord Bot setup
