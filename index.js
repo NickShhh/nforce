@@ -1,7 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
+const fetch = require('node-fetch');
 require('dotenv').config();
+
 
 const app = express();
 app.use(cors());
@@ -54,6 +56,16 @@ app.get('/bantop', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+async function getCountryFromIP(ip) {
+  try {
+    const res = await fetch(`https://ipapi.co/${ip}/json/`);
+    const data = await res.json();
+    return data.country_name || 'Unknown';
+  } catch {
+    return 'Unknown';
+  }
+}
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
