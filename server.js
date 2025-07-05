@@ -6,16 +6,17 @@ const { Client, GatewayIntentBits, ButtonBuilder, ButtonStyle, ActionRowBuilder,
 const app = express();
 app.use(express.json());
 
-// --- Configuración de MySQL (Railway) ---
-const pool = mysql.createPool({
+// Configuración de la base de datos (Railway)
+const dbConfig = {
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
+    port: process.env.DB_PORT, // <--- ¡AÑADE ESTA LÍNEA!
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
-});
+};
 
 // --- Configuración de Discord Bot ---
 const discordClient = new Client({
