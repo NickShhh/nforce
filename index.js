@@ -1,16 +1,20 @@
-const express = require("express")
-const cors = require("cors")
-const dotenv = require("dotenv")
-const bansRoutes = require("./routes/bans")
+// index.js
+const express = require('express');
+const cors = require('cors');
+const app = express();
+const bansRoutes = require('./routes/bans');
 
-dotenv.config()
-const app = express()
+const PORT = process.env.PORT || 3000;
 
-app.use(cors())
-app.use(express.json())
-app.use("/bans", bansRoutes)
+app.use(cors());
+app.use(express.json());
 
-const PORT = process.env.PORT || 3000
+app.use('/api', bansRoutes);
+
+app.get('/', (req, res) => {
+  res.send('🚀 N-FORCE backend API is running.');
+});
+
 app.listen(PORT, () => {
-	console.log(`🚀 N-FORCE backend running on port ${PORT}`)
-})
+  console.log(`🚀 N-FORCE backend running on port ${PORT}`);
+});
