@@ -1,25 +1,23 @@
-const express = require("express");
+// routes/bans.js
+const express = require('express');
 const router = express.Router();
-const db = require("../db");
+const db = require('../db');
 
-router.get("/is-banned/:userId", async (req, res) => {
-  const [rows] = await db.execute("SELECT * FROM bans WHERE userId = ?", [req.params.userId]);
-  res.json({ banned: rows.length > 0 });
-});
+router.get('/bans/:userId', async (req, res) => {
+  const { userId } = req.params;
 
-router.post("/ban", async (req, res) => {
-  const { userId, username, reason } = req.body;
-  await db.execute(
-    "INSERT INTO bans (userId, username, reason) VALUES (?, ?, ?)",
-    [userId, username, reason || "Sin razón"]
-  );
-  res.json({ success: true });
-});
+  try {
+    const [rows] = await db.execute('SELECT * FROM bans WHERE userId = ?', [userId]);
 
-router.post("/unban", async (req, res) => {
-  const { userId } = req.body;
-  await db.execute("DELETE FROM bans WHERE userId = ?", [userId]);
-  res.json({ success: true });
+    if (rows.length > 0) {
+      res.json({ banned: true, data: rows[0] });
+    } else {
+      res.json({ banned: false });
+    }
+  } catch (err) {
+    console.error('Error checking ban:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 
 module.exports = router;
