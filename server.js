@@ -43,7 +43,7 @@ async function startApplication() {
         discordClient.login(process.env.DISCORD_BOT_TOKEN);
 
         // Y también el servidor Express
-        app.listen(port, () => {
+        const server = app.listen(port, () => {
             console.log(`Backend server corriendo en el puerto ${port}`);
         });
 
