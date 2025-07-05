@@ -8,6 +8,8 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/exploit-reports', exploitReportsRoute);
+
 // Ruta montada
 app.use('/api/bans', bansRoutes);
 
