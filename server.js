@@ -58,13 +58,13 @@ discordClient.login(DISCORD_BOT_TOKEN);
 // Ruta para recibir reportes de Roblox
 app.post('/report', async (req, res) => {
     const data = req.body;
-    console.log('Reporte recibido de Roblox:', data.playerUsername);
+    console.log('Reporte recibido de Roblox:', data.playerUsername, 'Tipo:', data.detectionType);
 
-    const thumbnailUrl = "https://i.imgur.com/HIhlNEk.png"; // Puedes cambiar esto
-    const avatarUrl = "https://i0.wp.com/insightcrime.org/wp-content/uploads/2017/10/17-10-11-Brazil-Skull.jpg?w=350&quality=100&ssl=1"; // Puedes cambiar esto
+    const thumbnailUrl = "https://i.imgur.com/HIhlNEk.png"; 
+    const avatarUrl = "https://i0.wp.com/insightcrime.org/wp-content/uploads/2017/10/17-10-11-Brazil-Skull.jpg?w=350&quality=100&ssl=1"; 
 
     const embed = new EmbedBuilder()
-        .setTitle("🚨 N-FORCE: Intento de Acceso No Autorizado Detectado")
+        .setTitle("🚨 N-FORCE: Intento de Exploit Detectado") // Título más general
         .setColor(0xFF0000)
         .setThumbnail(thumbnailUrl)
         .addFields(
@@ -75,7 +75,13 @@ app.post('/report', async (req, res) => {
             },
             {
                 name: "⏳ Información de Sesión",
-                value: `> Tiempo en servidor: ${data.sessionPlaytime}s\n> Intentos de Reclamo: ${data.claimAttempts}\n> Umbral de Expulsión: ${data.kickThreshold}\n> ID del Juego: ${data.gameId}\n> ID del Lugar: ${data.placeId}`,
+                value: `> Tiempo en servidor: ${data.sessionPlaytime}s\n> ID del Juego: ${data.gameId}\n> ID del Lugar: ${data.placeId}`,
+                inline: false
+            },
+            // ! NUEVOS CAMPOS DE DETECCIÓN
+            {
+                name: `⚠️ Tipo de Detección: **${data.detectionType || "Desconocido"}**`,
+                value: data.detectionDetails || "No se proporcionaron detalles específicos.",
                 inline: false
             },
             {
@@ -117,6 +123,7 @@ app.post('/report', async (req, res) => {
         res.status(500).send('Error al enviar reporte a Discord.');
     }
 });
+
 
 // --- Manejo de Interacciones de Discord (Botones y Comandos) ---
 
