@@ -71,7 +71,6 @@ discordClient.once('ready', () => { // Ya no necesitamos await initializeDatabas
 });
 
 
-discordClient.login(DISCORD_BOT_TOKEN);
 
 // --- Rutas del API ---
 
