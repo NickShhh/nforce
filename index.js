@@ -1,22 +1,17 @@
 const express = require('express');
-const cors = require('cors');
-const bansRoutes = require('./routes/bans');
-
 const app = express();
-const port = process.env.PORT || 3000;
+const cors = require('cors');
+const exploitReportsRoute = require('./routes/exploitReports');
+const bansRoute = require('./routes/bans');
 
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/exploit-reports', exploitReportsRoute);
+// Rutas principales
+app.use('/api/bans', bansRoute);
+app.use('/api/exploit-reports', exploitReportsRoute); // Nueva ruta del anticheat
 
-// Ruta montada
-app.use('/api/bans', bansRoutes);
-
-app.get('/', (req, res) => {
-  res.send('🚀 N-FORCE backend API is running.');
-});
-
-app.listen(port, () => {
-  console.log(`🚀 N-FORCE backend API is running on port ${port}`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 N-FORCE backend API is running on port ${PORT}`);
 });
