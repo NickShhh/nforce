@@ -1,7 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise'); // Usaremos la versión de promesas
-const { Client, GatewayIntentBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, TextInputBuilder, ModalBuilder } = require('discord.js');
 
 const app = express();
 app.use(express.json());
