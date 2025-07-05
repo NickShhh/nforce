@@ -1,10 +1,10 @@
 require('dotenv').config();
 const express = require('express');
-const mysql = require('mysql2/promise'); // Usaremos la versión de promesas
+const mysql = require('mysql2/promise');
 const { Client, GatewayIntentBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, TextInputBuilder, ModalBuilder } = require('discord.js');
 
 const app = express();
-app.use(express.json());
+const port = process.env.PORT || 3000;
 
 // Configuración de la base de datos (Railway)
 const dbConfig = {
@@ -12,45 +12,64 @@ const dbConfig = {
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT, // <--- ¡AÑADE ESTA LÍNEA!
+    port: process.env.DB_PORT, // Asegúrate de que esta línea esté presente
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
 };
 
-// --- Configuración de Discord Bot ---
+let pool; // Declarada aquí para que sea accesible globalmente
+
+// *** Mueve la inicialización de la base de datos al inicio, antes del bot ***
+async function startApplication() {
+    try {
+        pool = mysql.createPool(dbConfig);
+        console.log('Conectado al pool de la base de datos MySQL.');
+
+        // Crear la tabla banned_players si no existe
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS banned_players (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id VARCHAR(255) NOT NULL UNIQUE,
+                username VARCHAR(255) NOT NULL,
+                reason TEXT NOT NULL,
+                banned_by VARCHAR(255) NOT NULL,
+                ban_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
+        console.log('Tabla banned_players asegurada/creada.');
+
+        // Ahora que la DB está lista, podemos iniciar el bot de Discord
+        discordClient.login(process.env.DISCORD_BOT_TOKEN);
+
+        // Y también el servidor Express
+        app.listen(port, () => {
+            console.log(`Backend server corriendo en el puerto ${port}`);
+        });
+
+    } catch (err) {
+        console.error('Error FATAL al iniciar la aplicación (DB o servidor):', err);
+        process.exit(1); // Sale del proceso si no puede conectar a la DB
+    }
+}
+
+// Discord Bot setup
 const discordClient = new Client({
     intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildMessages,
         GatewayIntentBits.MessageContent,
+        GatewayIntentBits.GuildMembers
     ]
 });
 
-const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
-const REPORT_CHANNEL_ID = process.env.REPORT_CHANNEL_ID; // ID del canal de Discord donde se enviarán los reportes
-const MOD_ROLES_IDS = process.env.MOD_ROLES_IDS ? process.env.MOD_ROLES_IDS.split(',') : []; // IDs de los roles de moderador
+const REPORT_CHANNEL_ID = process.env.REPORT_CHANNEL_ID;
+const MOD_ROLES_IDS = process.env.MOD_ROLES_IDS ? process.env.MOD_ROLES_IDS.split(',') : [];
 
-discordClient.once('ready', async () => {
+discordClient.once('ready', () => { // Ya no necesitamos await initializeDatabase() aquí
     console.log(`Bot de Discord listo como ${discordClient.user.tag}!`);
-    // Asegúrate de que la tabla de baneos exista
-    try {
-        await pool.query(`
-            CREATE TABLE IF NOT EXISTS banned_players (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                userId VARCHAR(255) UNIQUE NOT NULL,
-                username VARCHAR(255) NOT NULL,
-                reason TEXT NOT NULL,
-                bannedBy VARCHAR(255) NOT NULL,
-                bannedById VARCHAR(255) NOT NULL,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
-        `);
-        console.log('Tabla banned_players asegurada/creada.');
-    } catch (error) {
-        console.error('Error al crear la tabla banned_players:', error);
-    }
 });
+
 
 discordClient.login(DISCORD_BOT_TOKEN);
 
