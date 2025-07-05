@@ -1,20 +1,20 @@
-// index.js
 const express = require('express');
 const cors = require('cors');
-const app = express();
 const bansRoutes = require('./routes/bans');
 
-const PORT = process.env.PORT || 3000;
+const app = express();
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 
-app.use('/api', bansRoutes);
+// Ruta montada
+app.use('/api/bans', bansRoutes);
 
 app.get('/', (req, res) => {
   res.send('🚀 N-FORCE backend API is running.');
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 N-FORCE backend running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`🚀 N-FORCE backend API is running on port ${port}`);
 });
