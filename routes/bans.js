@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+
+// Endpoint de prueba
+router.get('/test', (req, res) => {
+    res.send('✅ API de bans funcionando');
+});
+
 router.post('/', async (req, res) => {
     const { userId, reason } = req.body;
     try {
