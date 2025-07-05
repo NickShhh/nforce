@@ -2,6 +2,24 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
+
+router.post('/', async (req, res) => {
+  const { userId, reason, bannedBy } = req.body;
+
+  try {
+    const [result] = await pool.execute(
+      'INSERT INTO bans (userId, reason, bannedBy) VALUES (?, ?, ?)',
+      [userId, reason, bannedBy || 'System']
+    );
+
+    res.status(201).json({ message: 'Ban registrado exitosamente', id: result.insertId });
+  } catch (error) {
+    console.error('Error al registrar el ban:', error);
+    res.status(500).json({ error: 'Error al registrar el ban' });
+  }
+});
+
+
 // Crear un ban (POST /api/bans)
 router.post('/', async (req, res) => {
     const { userId, reason } = req.body;
