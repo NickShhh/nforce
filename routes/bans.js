@@ -92,6 +92,28 @@ router.delete('/:userId', async (req, res) => {
     }
 });
 
+
+// Obtener ranking de moderadores/admins/ceos con más bans
+router.get('/topmods', async (req, res) => {
+  try {
+    const [rows] = await pool.execute(`
+      SELECT bannedBy, COUNT(*) AS totalBans
+      FROM bans
+      WHERE bannedBy IS NOT NULL
+      GROUP BY bannedBy
+      ORDER BY totalBans DESC
+      LIMIT 10
+    `);
+
+    res.json(rows);
+  } catch (error) {
+    console.error('Error fetching top mods:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+
 // Actualizar un ban por userId (PUT /api/bans/:userId)
 router.put('/:userId', async (req, res) => {
     const { userId } = req.params;
