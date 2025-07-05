@@ -4,7 +4,10 @@ const mysql = require('mysql2/promise');
 const { Client, GatewayIntentBits, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder, TextInputBuilder, ModalBuilder } = require('discord.js');
 
 const app = express();
-const port = process.env.PORT || 3000;
+// Cambia esta línea:
+// const port = process.env.PORT || 3000;
+// A esta:
+const port = process.env.PORT; // <--- Simplemente usa process.env.PORT
 
 // Configuración de la base de datos (Railway)
 const dbConfig = {
