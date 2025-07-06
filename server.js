@@ -168,6 +168,30 @@ app.post('/report', async (req, res) => {
 });
 
 
+// Nueva ruta para que Roblox verifique el estado de baneo de un jugador
+app.post('/checkBanStatus', async (req, res) => {
+    const { userId } = req.body; // Roblox enviará el userId en el cuerpo de la petición
+
+    if (!userId) {
+        return res.status(400).json({ error: 'UserID is required.' });
+    }
+
+    try {
+        const [rows] = await pool.query('SELECT reason FROM banned_players WHERE user_id = ?', [userId]);
+        if (rows.length > 0) {
+            // Si el usuario está en la tabla, está baneado.
+            res.status(200).json({ isBanned: true, reason: rows[0].reason });
+        } else {
+            // Si no está en la tabla, no está baneado.
+            res.status(200).json({ isBanned: false });
+        }
+    } catch (error) {
+        console.error(`Error al verificar estado de baneo para UserID ${userId}:`, error);
+        res.status(500).json({ isBanned: false, error: 'Database error.' });
+    }
+});
+
+
 // --- Manejo de Interacciones de Discord (Botones y Comandos) ---
 
 discordClient.on('interactionCreate', async interaction => {
