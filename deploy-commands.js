@@ -1,73 +1,72 @@
 // deploy-commands.js
-require('dotenv').config();
-const { REST, Routes } = require('discord.js');
+require('dotenv').config(); // Para cargar variables de entorno (CLIENT_ID, GUILD_ID, DISCORD_BOT_TOKEN)
 
-// Define tus comandos slash aquí
+const { SlashCommandBuilder, REST, Routes } = require('discord.js');
+
+// Asegúrate de que estas variables de entorno están disponibles aquí.
+// Si las tienes en un archivo .env local, este script las leerá.
+// Si no, asegúrate de pasarlas directamente o que Render las use en un paso de build.
+const CLIENT_ID = process.env.CLIENT_ID; 
+const GUILD_ID = process.env.GUILD_ID;   
+const DISCORD_BOT_TOKEN = process.env.DISCORD_BOT_TOKEN;
+
+if (!CLIENT_ID || !GUILD_ID || !DISCORD_BOT_TOKEN) {
+    console.error("Error: CLIENT_ID, GUILD_ID, y/o DISCORD_BOT_TOKEN no están definidos.");
+    console.error("Asegúrate de tener un archivo .env con estas variables o de que estén configuradas en tu entorno.");
+    process.exit(1);
+}
+
 const commands = [
-    {
-        name: 'ban',
-        description: 'Banea a un jugador de Roblox.',
-        options: [
-            {
-                name: 'userid',
-                type: 3, // String
-                description: 'El UserId de Roblox del jugador a banear.',
-                required: true,
-            },
-            {
-                name: 'reason',
-                type: 3, // String
-                description: 'La razón del baneo.',
-                required: true,
-            },
-            {
-                name: 'username',
-                type: 3, // String
-                description: '(Opcional) El nombre de usuario de Roblox.',
-                required: false,
-            }
-        ],
-    },
-    {
-        name: 'unban',
-        description: 'Desbanea a un jugador de Roblox.',
-        options: [
-            {
-                name: 'userid',
-                type: 3, // String
-                description: 'El UserId de Roblox del jugador a desbanear.',
-                required: true,
-            },
-        ],
-    },
-    {
-        name: 'listbans',
-        description: 'Muestra una lista de los jugadores baneados.',
-    },
-    {
-        name: 'topbans',
-        description: 'Muestra un top de los moderadores que más han baneado.',
-    },
-];
+    new SlashCommandBuilder()
+        .setName('ban')
+        .setDescription('Banea a un usuario de Roblox.')
+        .addStringOption(option =>
+            option.setName('userid')
+                .setDescription('El UserID de Roblox del jugador a banear.')
+                .setRequired(true))
+        .addStringOption(option =>
+            option.setName('reason')
+                .setDescription('La razón del baneo.')
+                .setRequired(true)),
+    new SlashCommandBuilder()
+        .setName('unban')
+        .setDescription('Desbanea a un usuario de Roblox.')
+        .addStringOption(option =>
+            option.setName('userid')
+                .setDescription('El UserID de Roblox del jugador a desbanear.')
+                .setRequired(true)),
+    new SlashCommandBuilder()
+        .setName('checkban')
+        .setDescription('Verifica el estado de baneo de un usuario de Roblox.')
+        .addStringOption(option =>
+            option.setName('userid')
+                .setDescription('El UserID de Roblox del jugador a verificar.')
+                .setRequired(true)),
+    new SlashCommandBuilder()
+        .setName('listbans')
+        .setDescription('Lista los baneos más recientes.'),
+    new SlashCommandBuilder()
+        .setName('topbans')
+        .setDescription('Muestra los moderadores con más baneos.'),
+    new SlashCommandBuilder()
+        .setName('help')
+        .setDescription('Muestra los comandos disponibles.'),
+].map(command => command.toJSON());
 
-// Crea una instancia de REST para interactuar con la API de Discord
-const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_BOT_TOKEN);
+const rest = new REST({ version: '10' }).setToken(DISCORD_BOT_TOKEN);
 
-// Función asíncrona para registrar los comandos
 (async () => {
     try {
-        console.log('Empezando a refrescar (/) comandos de aplicación.');
+        console.log(`Comenzando a registrar ${commands.length} comandos de aplicación (/) para el gremio ${GUILD_ID}.`);
 
-        // Registra los comandos para una aplicación global (disponibles en todos los servidores donde el bot esté invitado)
-        // Puedes cambiar a Routes.applicationGuildCommands(process.env.DISCORD_CLIENT_ID, 'ID_DE_TU_SERVIDOR')
-        // si quieres registrar los comandos solo para un servidor específico (útil para pruebas).
-        await rest.put(
-            Routes.applicationCommands(process.env.DISCORD_CLIENT_ID),
+        // Usa Routes.applicationGuildCommands para comandos específicos de un gremio (actualización rápida)
+        const data = await rest.put(
+            Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID),
             { body: commands },
         );
 
-        console.log('Comandos (/) de aplicación recargados exitosamente.');
+        console.log(`Se registraron exitosamente ${data.length} comandos de aplicación (/).`);
     } catch (error) {
-        console.error('Error al registrar comandos:', error);
+        console.error('Error al registrar comandos de aplicación (/). Asegúrate de que CLIENT_ID, GUILD_ID y DISCORD_BOT_TOKEN son correctos:', error);
     }
 })();
