@@ -390,7 +390,7 @@ discordClient.on('interactionCreate', async interaction => {
                                      `  Razón: ${banInfo.reason}\n` +
                                      `  Fecha de Baneo: ${new Date(banInfo.ban_date).toLocaleString()}\n` +
                                      `  Baneado Por: ${banInfo.banned_by}\n\`\`\``,
-                            ephemeral: false
+                            ephemeral: true
                         });
                     } else {
                         await interaction.editReply({ content: `✅ Jugador **${userIdCheck}** NO está baneado.`, ephemeral: false });
