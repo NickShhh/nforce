@@ -47,57 +47,7 @@ discordClient.once('ready', async () => {
     console.log(`Bot de Discord listo como ${discordClient.user.tag}!`);
 
     // --- Registrar comandos de Slash (si aún no lo has hecho) ---
-    const commands = [
-        new SlashCommandBuilder()
-            .setName('ban')
-            .setDescription('Banea a un usuario de Roblox.')
-            .addStringOption(option =>
-                option.setName('userid')
-                    .setDescription('El UserID de Roblox del jugador a banear.')
-                    .setRequired(true))
-            .addStringOption(option =>
-                option.setName('reason')
-                    .setDescription('La razón del baneo.')
-                    .setRequired(true)),
-        new SlashCommandBuilder()
-            .setName('unban')
-            .setDescription('Desbanea a un usuario de Roblox.')
-            .addStringOption(option =>
-                option.setName('userid')
-                    .setDescription('El UserID de Roblox del jugador a desbanear.')
-                    .setRequired(true)),
-        new SlashCommandBuilder()
-            .setName('checkban')
-            .setDescription('Verifica el estado de baneo de un usuario de Roblox.')
-            .addStringOption(option =>
-                option.setName('userid')
-                    .setDescription('El UserID de Roblox del jugador a verificar.')
-                    .setRequired(true)),
-        new SlashCommandBuilder()
-            .setName('listbans')
-            .setDescription('Lista los baneos más recientes.'),
-        new SlashCommandBuilder()
-            .setName('topbans')
-            .setDescription('Muestra los moderadores con más baneos.'),
-        new SlashCommandBuilder()
-            .setName('help')
-            .setDescription('Muestra los comandos disponibles.'),
-    ].map(command => command.toJSON());
-
-    const rest = new REST({ version: '10' }).setToken(DISCORD_BOT_TOKEN);
-
-    try {
-        console.log('Empezando a registrar comandos de aplicación (/)');
-        await rest.put(
-            Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), // Para comandos de gremio (se actualizan más rápido)
-            // Routes.applicationCommands(CLIENT_ID), // Para comandos globales (tardan hasta 1 hora en propagarse)
-            { body: commands },
-        );
-        console.log('Comandos de aplicación (/) registrados exitosamente.');
-    } catch (error) {
-        console.error('Error al registrar comandos de aplicación (/). Asegúrate de CLIENT_ID y GUILD_ID son correctos y el bot tiene los permisos necesarios:', error);
-    }
-});
+  
 
 // Función para obtener el nombre de usuario de Roblox dado un userId
 async function getRobloxUsername(userId) {
