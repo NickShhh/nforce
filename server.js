@@ -317,7 +317,7 @@ discordClient.on('interactionCreate', async interaction => {
                     const originalEmbed = EmbedBuilder.from(interaction.message.embeds[0]);
                     originalEmbed.addFields({
                         name: "✅ Ban Status",
-                        value: `**Baneado por:** ${moderatorUsername}\n**Razón:** ${banReason}\n**Fecha:** ${new Date().toLocaleString()}`,
+                        value: `**Banned by:** ${moderatorUsername}\n**Reason:** ${banReason}\n**Date:** ${new Date().toLocaleString()}`,
                         inline: false
                     });
                     // Eliminar el botón después de banear
