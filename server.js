@@ -139,6 +139,14 @@ async function startApplication() {
         // --- INICIO DE SESIÓN DEL BOT DE DISCORD CON TIEMPO LÍMITE ---
         console.log('Intentando iniciar sesión del bot de Discord...');
 
+        // ... (inside startApplication, before discordClient.login)
+
+console.log('Intentando iniciar sesión del bot de Discord...');
+console.log(`Verificando DISCORD_BOT_TOKEN: ${process.env.DISCORD_BOT_TOKEN ? 'Cargado' : 'No cargado'}, Longitud: ${process.env.DISCORD_BOT_TOKEN ? process.env.DISCORD_BOT_TOKEN.length : 0}`);
+
+const discordLoginPromise = discordClient.login(process.env.DISCORD_BOT_TOKEN); // Ensure you're using process.env here!
+// ... (rest of your timeout logic)
+        
         const discordLoginPromise = discordClient.login(DISCORD_BOT_TOKEN);
         const timeoutPromise = new Promise((resolve, reject) => {
             setTimeout(() => {
