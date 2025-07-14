@@ -121,7 +121,6 @@ async function startApplication() {
         pool = mysql.createPool(dbConfig);
         console.log('Conectado al pool de la base de datos MySQL.');
 
-        // Asegurar que la tabla banned_players existe
         await pool.query(`
             CREATE TABLE IF NOT EXISTS banned_players (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -135,12 +134,13 @@ async function startApplication() {
         `);
         console.log('Tabla banned_players asegurada/creada.');
 
-        // Iniciar sesión del bot de Discord
-        discordClient.login(DISCORD_BOT_TOKEN).catch(err => {
-            console.error("Error al iniciar el bot de Discord:", err);
-            console.error("Asegúrate de que DISCORD_BOT_TOKEN es correcto y los Intenciones (Intents) están activados en el Portal de Desarrolladores de Discord (MESSAGE CONTENT INTENT, GUILD MEMBERS).");
-            process.exit(1); // Salir si el bot no puede iniciar sesión
-        });
+        // --- Iniciar sesión del bot de Discord (AHORA CON AWAIT) ---
+        console.log('Intentando iniciar sesión del bot de Discord...'); // Added log
+        await discordClient.login(DISCORD_BOT_TOKEN); // <--- Await this line
+        console.log('¡Conexión del bot de Discord iniciada exitosamente!'); // This will only log on success
+
+        // Si el login falla, el .catch() fuera de esta función (o un try/catch aquí) lo atraparía
+        // y el process.exit(1) se ejecutaría, deteniendo el deploy.
 
         // Iniciar el servidor Express
         const server = app.listen(port, () => {
@@ -158,8 +158,10 @@ async function startApplication() {
         });
 
     } catch (err) {
-        console.error('Error FATAL al iniciar la aplicación (DB o servidor):', err);
-        process.exit(1); // Asegurar que la aplicación se detiene si hay un error crítico al inicio
+        // Este catch manejará cualquier error en los await de la DB o el login del bot
+        console.error('Error FATAL al iniciar la aplicación (DB, Discord Bot o Express Server):', err);
+        console.error("Detalles: Asegúrate de que las variables de entorno para DB y Discord son correctas.");
+        process.exit(1);
     }
 }
 
