@@ -143,7 +143,6 @@ async function startApplication() {
 
 console.log(`Verificando DISCORD_BOT_TOKEN: ${process.env.DISCORD_BOT_TOKEN ? 'Cargado' : 'No cargado'}, Longitud: ${process.env.DISCORD_BOT_TOKEN ? process.env.DISCORD_BOT_TOKEN.length : 0}`);
 
-const discordLoginPromise = discordClient.login(process.env.DISCORD_BOT_TOKEN); // Ensure you're using process.env here!
 // ... (rest of your timeout logic)
         
         const discordLoginPromise = discordClient.login(DISCORD_BOT_TOKEN);
