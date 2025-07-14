@@ -180,12 +180,12 @@ app.post('/report', async (req, res) => {
         .addFields(
             {
                 name: "👤 Player Profile",
-                value: `**Username:** ${data.playerUsername}\n**Display Name:** ${data.playerDisplayName}\n**User ID:** ${data.playerUserId}\n**Account Age:** ${data.playerAccountAge} days\n**Premium:** ${data.playerPremium ? "Yes" : "No"}\n**Team:** ${data.playerTeam}\n**Device:** ${data.deviceUsed}`,
+                value: `**Username:** ${data.playerUsername || "N/A"}\n**Display Name:** ${data.playerDisplayName || "N/A"}\n**User ID:** ${data.playerUserId || "N/A"}\n**Account Age:** ${data.playerAccountAge} days\n**Premium:** ${data.playerPremium ? "Yes" : "No"}\n**Team:** ${data.playerTeam || "N/A"}\n**Device:** ${data.deviceUsed || "N/A"}`,
                 inline: false
             },
             {
                 name: "⏳ Session Information",
-                value: `> Time in Server: ${data.sessionPlaytime}s\n> Game ID: ${data.gameId}\n> Place ID: ${data.placeId}`,
+                value: `> Time in Server: ${data.sessionPlaytime || "N/A"}s\n> Game ID: ${data.gameId || "N/A"}\n> Place ID: ${data.placeId || "N/A"}`,
                 inline: false
             },
             {
@@ -195,12 +195,14 @@ app.post('/report', async (req, res) => {
             },
             {
                 name: "📊 Behavior Analysis",
-                value: data.behaviorAnalysis,
+                // --- CAMBIO AQUÍ ---
+                value: data.behaviorAnalysis || "No behavior analysis provided.", // Provide a default string
                 inline: false
             },
             {
                 name: "🗯️ 'Roast' Report",
-                value: data.roastLine,
+                // --- CAMBIO AQUÍ ---
+                value: data.roastLine || "No specific 'roast' report.", // Provide a default string
                 inline: false
             }
         )
@@ -219,8 +221,6 @@ app.post('/report', async (req, res) => {
             await channel.send({
                 embeds: [embed],
                 components: [row],
-                // username y avatarURL aquí no son para el bot, sino para un webhook si lo estuvieras usando.
-                // Para el bot normal, estos se ignoran y usa su propia información.
             });
             res.status(200).send('Report sent to Discord.');
         } else {
