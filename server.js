@@ -118,8 +118,26 @@ async function getRobloxUsername(userId) {
 
 // ... (código anterior)
 
+
 async function startApplication() {
     try {
+        // --- INICIAR SERVIDOR EXPRESS PRIMERO ---
+        const server = app.listen(port, () => {
+            console.log(`Backend server corriendo en el puerto ${port}`);
+        });
+
+        server.on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+                console.error(`Error: El puerto ${port} ya está en uso. Esta instancia saldrá.`);
+                process.exit(1);
+            } else {
+                console.error('Error al iniciar el servidor Express:', err);
+                process.exit(1);
+            }
+        });
+        console.log('Servidor Express iniciado y escuchando.');
+
+        // --- CONEXIÓN A LA BASE DE DATOS ---
         pool = mysql.createPool(dbConfig);
         console.log('Conectado al pool de la base de datos MySQL.');
 
@@ -138,40 +156,20 @@ async function startApplication() {
 
         // --- INICIO DE SESIÓN DEL BOT DE DISCORD CON TIEMPO LÍMITE ---
         console.log('Intentando iniciar sesión del bot de Discord...');
+        console.log(`Verificando DISCORD_BOT_TOKEN: ${process.env.DISCORD_BOT_TOKEN ? 'Cargado' : 'No cargado'}, Longitud: ${process.env.DISCORD_BOT_TOKEN ? process.env.DISCORD_BOT_TOKEN.length : 0}`);
 
-        // ... (inside startApplication, before discordClient.login)
-
-console.log(`Verificando DISCORD_BOT_TOKEN: ${process.env.DISCORD_BOT_TOKEN ? 'Cargado' : 'No cargado'}, Longitud: ${process.env.DISCORD_BOT_TOKEN ? process.env.DISCORD_BOT_TOKEN.length : 0}`);
-
-// ... (rest of your timeout logic)
-        
         const discordLoginPromise = discordClient.login(DISCORD_BOT_TOKEN);
         const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => { reject(new Error('Timeout: El bot de Discord no se conectó en 60 segundos.')); }, 60000); // 30 segundos de tiempo límite
+            setTimeout(() => {
+                reject(new Error('Timeout: El bot de Discord no se conectó en 60 segundos.')); // Mantén 60s por ahora
+            }, 60000);
         });
 
-        // 'await' esperará a que una de las dos promesas (login o timeout) se resuelva o rechace
         await Promise.race([discordLoginPromise, timeoutPromise]);
         console.log('¡Conexión del bot de Discord iniciada exitosamente!');
         // --- FIN DEL BLOQUE DE TIEMPO LÍMITE ---
 
-        // Iniciar el servidor Express
-        const server = app.listen(port, () => {
-            console.log(`Backend server corriendo en el puerto ${port}`);
-        });
-
-        server.on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-                console.error(`Error: El puerto ${port} ya está en uso. Esta instancia saldrá.`);
-                process.exit(1);
-            } else {
-                console.error('Error al iniciar el servidor Express:', err);
-                process.exit(1);
-            }
-        });
-
     } catch (err) {
-        // Este catch ahora atrapará el error de timeout si ocurre, o cualquier otro error de login
         console.error('Error FATAL al iniciar la aplicación (DB, Discord Bot o Express Server):', err);
         console.error("Detalles: Asegúrate de que las variables de entorno para DB y Discord son correctas y los Intents están activados en el Portal de Desarrolladores.");
         process.exit(1);
