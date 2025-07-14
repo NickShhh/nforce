@@ -147,9 +147,7 @@ console.log(`Verificando DISCORD_BOT_TOKEN: ${process.env.DISCORD_BOT_TOKEN ? 'C
         
         const discordLoginPromise = discordClient.login(DISCORD_BOT_TOKEN);
         const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error('Timeout: El bot de Discord no se conectó en 30 segundos.'));
-            }, 30000); // 30 segundos de tiempo límite
+            setTimeout(() => { reject(new Error('Timeout: El bot de Discord no se conectó en 60 segundos.')); }, 60000); // 30 segundos de tiempo límite
         });
 
         // 'await' esperará a que una de las dos promesas (login o timeout) se resuelva o rechace
