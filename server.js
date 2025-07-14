@@ -170,8 +170,8 @@ app.post('/report', async (req, res) => {
     const data = req.body;
     console.log('Reporte recibido de Roblox:', data.playerUsername, 'Tipo:', data.detectionType);
 
-    const thumbnailUrl = "https://i.imgur.com/HIhlNEk.png"; // Puedes cambiar esto
-    const avatarUrl = "https://i0.wp.com/insightcrime.org/wp-content/uploads/2017/10/17-10-11-Brazil-Skull.jpg?w=350&quality=100&ssl=1"; // Puedes cambiar esto
+    const thumbnailUrl = "https://i.imgur.com/HIhlNEk.png";
+    const avatarUrl = "https://i0.wp.com/insightcrime.org/wp-content/uploads/2017/10/17-10-11-Brazil-Skull.jpg?w=350&quality=100&ssl=1";
 
     const embed = new EmbedBuilder()
         .setTitle("🚨 N-FORCE: Exploit Attempt Detected")
@@ -180,36 +180,47 @@ app.post('/report', async (req, res) => {
         .addFields(
             {
                 name: "👤 Player Profile",
-                value: `**Username:** ${data.playerUsername || "N/A"}\n**Display Name:** ${data.playerDisplayName || "N/A"}\n**User ID:** ${data.playerUserId || "N/A"}\n**Account Age:** ${data.playerAccountAge} days\n**Premium:** ${data.playerPremium ? "Yes" : "No"}\n**Team:** ${data.playerTeam || "N/A"}\n**Device:** ${data.deviceUsed || "N/A"}`,
+                // Asegúrate de que todos estos valores tengan un fallback, incluso si son solo para depuración
+                value: `**Username:** ${data.playerUsername || "N/A"}\n` +
+                       `**Display Name:** ${data.playerDisplayName || "N/A"}\n` +
+                       `**User ID:** ${data.playerUserId || "N/A"}\n` +
+                       `**Account Age:** ${data.playerAccountAge || "N/A"} days\n` + // Added fallback
+                       `**Premium:** ${data.playerPremium ? "Yes" : "No"}\n` +
+                       `**Team:** ${data.playerTeam || "N/A"}\n` + // Added fallback
+                       `**Device:** ${data.deviceUsed || "N/A"}`, // Added fallback
                 inline: false
             },
             {
                 name: "⏳ Session Information",
-                value: `> Time in Server: ${data.sessionPlaytime || "N/A"}s\n> Game ID: ${data.gameId || "N/A"}\n> Place ID: ${data.placeId || "N/A"}`,
+                // Asegúrate de que todos estos valores tengan un fallback
+                value: `> Time in Server: ${data.sessionPlaytime || "N/A"}s\n` + // Added fallback
+                       `> Game ID: ${data.gameId || "N/A"}\n` + // Added fallback
+                       `> Place ID: ${data.placeId || "N/A"}`, // Added fallback
                 inline: false
             },
             {
                 name: `⚠️ Detection Type: **${data.detectionType || "Unknown"}**`,
+                // Este ya tenía un fallback, pero lo confirmo
                 value: data.detectionDetails || "No specific details provided.",
                 inline: false
             },
             {
                 name: "📊 Behavior Analysis",
-                // --- CAMBIO AQUÍ ---
-                value: data.behaviorAnalysis || "No behavior analysis provided.", // Provide a default string
+                // Este es uno de los que causaba problemas, con fallback
+                value: data.behaviorAnalysis || "No behavior analysis provided.",
                 inline: false
             },
             {
                 name: "🗯️ 'Roast' Report",
-                // --- CAMBIO AQUÍ ---
-                value: data.roastLine || "No specific 'roast' report.", // Provide a default string
+                // Este es el otro que causaba problemas, con fallback
+                value: data.roastLine || "No specific 'roast' report.",
                 inline: false
             }
         )
         .setFooter({ text: `Case logged by N-FORCE • ${new Date().toLocaleString()}` });
 
     const banButton = new ButtonBuilder()
-        .setCustomId(`ban_${data.playerUserId}`)
+        .setCustomId(`ban_${data.playerUserId || 'unknown_id'}`) // Fallback for customId too
         .setLabel('🚫 Ban Player')
         .setStyle(ButtonStyle.Danger);
 
@@ -229,7 +240,8 @@ app.post('/report', async (req, res) => {
         }
     } catch (error) {
         console.error('Error al enviar reporte a Discord:', error);
-        res.status(500).send('Error sending report to Discord.');
+        // Envía una respuesta de error al remitente de Roblox
+        res.status(500).send(`Error sending report to Discord: ${error.message}`);
     }
 });
 
