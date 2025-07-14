@@ -116,6 +116,8 @@ async function getRobloxUsername(userId) {
     return `User_${userId}`; // Fallback si no se puede obtener el nombre
 }
 
+// ... (código anterior)
+
 async function startApplication() {
     try {
         pool = mysql.createPool(dbConfig);
@@ -134,13 +136,20 @@ async function startApplication() {
         `);
         console.log('Tabla banned_players asegurada/creada.');
 
-        // --- Iniciar sesión del bot de Discord (AHORA CON AWAIT) ---
-        console.log('Intentando iniciar sesión del bot de Discord...'); // Added log
-        await discordClient.login(DISCORD_BOT_TOKEN); // <--- Await this line
-        console.log('¡Conexión del bot de Discord iniciada exitosamente!'); // This will only log on success
+        // --- INICIO DE SESIÓN DEL BOT DE DISCORD CON TIEMPO LÍMITE ---
+        console.log('Intentando iniciar sesión del bot de Discord...');
 
-        // Si el login falla, el .catch() fuera de esta función (o un try/catch aquí) lo atraparía
-        // y el process.exit(1) se ejecutaría, deteniendo el deploy.
+        const discordLoginPromise = discordClient.login(DISCORD_BOT_TOKEN);
+        const timeoutPromise = new Promise((resolve, reject) => {
+            setTimeout(() => {
+                reject(new Error('Timeout: El bot de Discord no se conectó en 30 segundos.'));
+            }, 30000); // 30 segundos de tiempo límite
+        });
+
+        // 'await' esperará a que una de las dos promesas (login o timeout) se resuelva o rechace
+        await Promise.race([discordLoginPromise, timeoutPromise]);
+        console.log('¡Conexión del bot de Discord iniciada exitosamente!');
+        // --- FIN DEL BLOQUE DE TIEMPO LÍMITE ---
 
         // Iniciar el servidor Express
         const server = app.listen(port, () => {
@@ -158,12 +167,14 @@ async function startApplication() {
         });
 
     } catch (err) {
-        // Este catch manejará cualquier error en los await de la DB o el login del bot
+        // Este catch ahora atrapará el error de timeout si ocurre, o cualquier otro error de login
         console.error('Error FATAL al iniciar la aplicación (DB, Discord Bot o Express Server):', err);
-        console.error("Detalles: Asegúrate de que las variables de entorno para DB y Discord son correctas.");
+        console.error("Detalles: Asegúrate de que las variables de entorno para DB y Discord son correctas y los Intents están activados en el Portal de Desarrolladores.");
         process.exit(1);
     }
 }
+
+// ... (resto de tu código)
 
 // --- Rutas del API para Roblox ---
 
