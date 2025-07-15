@@ -154,19 +154,33 @@ async function startApplication() {
         `);
         console.log('Tabla banned_players asegurada/creada.');
 
-        // --- INICIO DE SESIÓN DEL BOT DE DISCORD CON TIEMPO LÍMITE ---
+ // ... (código existente para Express y DB) ...
+
         console.log('Intentando iniciar sesión del bot de Discord...');
         console.log(`Verificando DISCORD_BOT_TOKEN: ${process.env.DISCORD_BOT_TOKEN ? 'Cargado' : 'No cargado'}, Longitud: ${process.env.DISCORD_BOT_TOKEN ? process.env.DISCORD_BOT_TOKEN.length : 0}`);
 
-        const discordLoginPromise = discordClient.login(DISCORD_BOT_TOKEN);
-        const timeoutPromise = new Promise((resolve, reject) => {
-            setTimeout(() => {
-                reject(new Error('Timeout: El bot de Discord no se conectó en 60 segundos.')); // Mantén 60s por ahora
-            }, 60000);
+        // Crear una promesa que se resuelve cuando el bot está ready
+        const readyPromise = new Promise((resolve, reject) => {
+            const timeoutId = setTimeout(() => {
+                reject(new Error('Timeout: El bot de Discord no se conectó o no disparó el evento "ready" en 60 segundos.'));
+            }, 60000); // 60 segundos de tiempo límite
+
+            discordClient.once('ready', () => {
+                clearTimeout(timeoutId); // Limpiar el timeout si el bot está ready
+                resolve();
+            });
+
+            discordClient.once('error', (error) => { // Captura errores de login tempranos
+                clearTimeout(timeoutId);
+                reject(new Error(`Error durante el login de Discord: ${error.message}`));
+            });
         });
 
-        await Promise.race([discordLoginPromise, timeoutPromise]);
-        console.log('¡Conexión del bot de Discord iniciada exitosamente!');
+        // Iniciar sesión y esperar que el bot esté listo
+        await discordClient.login(DISCORD_BOT_TOKEN);
+        await readyPromise; // Esperar el evento 'ready' o el timeout
+
+        console.log('¡Conexión del bot de Discord iniciada exitosamente y bot está READY!'); // Este log ahora es más preciso
         // --- FIN DEL BLOQUE DE TIEMPO LÍMITE ---
 
     } catch (err) {
@@ -175,7 +189,6 @@ async function startApplication() {
         process.exit(1);
     }
 }
-
 // ... (resto de tu código)
 
 // --- Rutas del API para Roblox ---
